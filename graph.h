@@ -28,6 +28,7 @@ public:
   }
 
   void print_graph();
+  int greutate();
 
   bool are_ciclu();
   int comp_conexe();

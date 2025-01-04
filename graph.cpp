@@ -195,6 +195,7 @@ Graph Graph::kruskal() {
   std::sort(this->edge_list.begin(), this->edge_list.end());
 
   GraphContainer container;
+  container.resize(this->container.size());
   DSU s(this->container.size());
   size_t count = 0;
   for (auto &edge : this->edge_list) {
@@ -212,4 +213,12 @@ Graph Graph::kruskal() {
     }
   }
   return Graph(container);
+}
+
+int Graph::greutate() {
+  int sum = 0;
+  for (auto &edge : this->edge_list) {
+    sum += std::get<0>(edge);
+  }
+  return sum;
 }

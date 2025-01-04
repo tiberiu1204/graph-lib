@@ -10,6 +10,7 @@ int main() {
 
   GraphContainer cyclicGraph = {{{1, 1}}, {{2, 1}}, {{3, 1}}, {{0, 1}}};
   Graph graphWithCycle(cyclicGraph);
+  graphWithCycle.print_graph();
 
   std::cout << "Test 2: Cycle detection - "
             << (graphWithCycle.are_ciclu() ? "Passed" : "Failed") << std::endl;
@@ -52,6 +53,14 @@ int main() {
   GraphContainer weightedGraph = {
       {{1, 4}, {2, 3}}, {{2, 1}, {3, 2}}, {{3, 5}}, {}};
   Graph graphForKruskal(weightedGraph);
+
+  Graph mst = graphForKruskal.kruskal();
+  int expectedWeight = 6;
+
+  std::cout << "Test 7: Kruskal's MST Weight Check - "
+            << (mst.greutate() == expectedWeight && !mst.are_ciclu() ? "Passed"
+                                                                     : "Failed")
+            << std::endl;
 
   return 0;
 }
