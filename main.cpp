@@ -62,5 +62,43 @@ int main() {
                                                                      : "Failed")
             << std::endl;
 
-  return 0;
+  Graph test8_1(GraphContainer({{{1, 1}, {2, 1}, {3, 1}},
+                                {{0, 1}, {2, 1}},
+                                {{0, 1}, {1, 1}},
+                                {{0, 1}, {4, 1}},
+                                {{3, 1}}}));
+  Graph test8_2(
+      GraphContainer({{{1, 1}}, {{0, 1}, {2, 1}}, {{1, 1}, {3, 1}}, {{2, 1}}}));
+
+  Graph test8_3(GraphContainer({{{1, 1}, {2, 1}},
+                                {{0, 1}, {2, 1}, {3, 1}, {4, 1}, {6, 1}},
+
+                                {{0, 1}, {1, 1}},
+                                {{1, 1}, {5, 1}},
+                                {{1, 1}, {5, 1}},
+                                {{3, 1}, {4, 1}},
+                                {{1, 1}}}));
+
+  std::cout << "Test 8: Trajan's critical points - "
+            << (test8_1.puncte_critice() == std::vector<int>({0, 3}) &&
+                        test8_2.puncte_critice() == std::vector<int>({1, 2}) &&
+                        test8_3.puncte_critice() == std::vector<int>({1})
+                    ? "Passed"
+                    : "Failed")
+            << std::endl;
+  Graph test9_1(GraphContainer({{{1, 4}, {7, 8}},
+                                {{0, 4}, {2, 8}, {7, 11}},
+                                {{1, 8}, {3, 7}, {8, 2}, {5, 4}},
+                                {{2, 7}, {4, 9}, {5, 14}},
+                                {{3, 9}, {5, 10}},
+                                {{2, 4}, {3, 14}, {4, 10}, {6, 2}},
+                                {{5, 2}, {7, 1}, {8, 6}},
+                                {{0, 8}, {1, 11}, {6, 1}, {8, 7}},
+                                {{2, 2}, {6, 6}, {7, 7}}}));
+  std::cout << "Test 9: Dijkstra - "
+            << (test9_1.dijkstra(0) ==
+                        std::vector<int>({0, 4, 12, 19, 21, 11, 9, 8, 14})
+                    ? "Passesd"
+                    : "Failed")
+            << std::endl;
 }

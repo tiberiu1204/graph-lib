@@ -1,7 +1,9 @@
 #include "graph.h"
+#include "limits.h"
 #include <algorithm>
 #include <iostream>
 #include <queue>
+#include <set>
 
 void Graph::print_graph() {
   for (size_t node = 0; node < this->container.size(); node++) {
@@ -153,6 +155,7 @@ bool Graph::este_bipartit() {
   }
   return true;
 }
+
 DSU::DSU(int n) {
   this->parent.resize(n);
   this->rank.resize(n, 0);
@@ -221,4 +224,76 @@ int Graph::greutate() {
     sum += std::get<0>(edge);
   }
   return sum;
+}
+
+void Graph::dfs_puncte_critice(int node, int parent, std::vector<bool> &visited,
+                               std::vector<int> &disc, std::vector<int> &low,
+                               int &time, std::vector<bool> &critical) {
+  visited[node] = true;
+  disc[node] = low[node] = ++time;
+
+  int children = 0;
+  for (std::pair<int, int> &neighbour : this->container[node]) {
+    int n_node = neighbour.first;
+    if (!visited[n_node]) {
+      children++;
+      dfs_puncte_critice(n_node, node, visited, disc, low, time, critical);
+
+      low[node] = std::min(low[node], low[n_node]);
+
+      if (parent != -1 && low[n_node] >= disc[node]) {
+        critical[node] = true;
+      }
+    } else if (n_node != parent) {
+      low[node] = std::min(low[node], disc[n_node]);
+    }
+  }
+
+  if (parent == -1 && children > 1) {
+    critical[node] = true;
+  }
+}
+
+std::vector<int> Graph::puncte_critice() {
+  size_t n = this->container.size();
+  std::vector<int> disc(n, 0), low(n, 0);
+  std::vector<bool> visited(n, false), critical(n, false);
+  int time = 0;
+
+  for (size_t node = 0; node < this->container.size(); node++) {
+    if (!visited[node]) {
+      dfs_puncte_critice(node, -1, visited, disc, low, time, critical);
+    }
+  }
+
+  std::vector<int> nodes;
+  for (size_t i = 0; i < critical.size(); i++) {
+    if (critical[i])
+      nodes.push_back(i);
+  }
+
+  return nodes;
+}
+
+std::vector<int> Graph::dijkstra(int src_node) {
+  size_t n = this->container.size();
+  std::vector<int> dist(n, INT_MAX);
+  std::set<std::pair<int, int>> heap;
+  dist[src_node] = 0;
+  heap.insert({0, src_node});
+
+  while (!heap.empty()) {
+    int node = heap.begin()->second;
+    heap.erase(heap.begin());
+
+    for (std::pair<int, int> &neighbour : this->container[node]) {
+      int n_node = neighbour.first;
+      int cost = neighbour.second;
+      if (dist[node] + cost < dist[n_node] && dist[node] != INT_MAX) {
+        dist[n_node] = dist[node] + cost;
+        heap.insert({dist[n_node], n_node});
+      }
+    }
+  }
+  return dist;
 }

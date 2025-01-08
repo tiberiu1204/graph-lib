@@ -23,20 +23,26 @@ class Graph {
 public:
   Graph() = default;
   Graph(GraphContainer &g) {
-    this->container = g;
+    this->container = std::move(g);
+    this->get_edgelist();
+  }
+  Graph(GraphContainer &&g) {
+    this->container = std::move(g);
     this->get_edgelist();
   }
 
   void print_graph();
   int greutate();
+  Graph neorientat();
 
   bool are_ciclu();
   int comp_conexe();
   bool este_conex();
   bool este_bipartit();
   std::vector<int> sortare_topologica();
-  Graph neorientat();
   Graph kruskal();
+  std::vector<int> puncte_critice();
+  std::vector<int> dijkstra(int src_node);
   const std::vector<std::tuple<int, int, int>> &lista_muchii() const {
     return this->edge_list;
   }
@@ -52,6 +58,9 @@ private:
   bool dfs_are_ciclu(int node, std::vector<int> &colors);
   void dfs_comp_conexe(int node, std::vector<int> &visited,
                        std::vector<int> &order, bool do_order = true);
+  void dfs_puncte_critice(int node, int parent, std::vector<bool> &visited,
+                          std::vector<int> &disc, std::vector<int> &low,
+                          int &time, std::vector<bool> &critical);
 };
 
 #endif
