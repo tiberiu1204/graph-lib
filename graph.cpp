@@ -9,7 +9,7 @@ void Graph::print_graph() {
   for (size_t node = 0; node < this->container.size(); node++) {
     std::cout << "Node " << node << ": ";
     for (auto &neighbor : this->container[node]) {
-      std::cout << "(" << neighbor.first << ", " << neighbor.second << ") ";
+      std::cout << "(" << neighbor.dest << ", " << neighbor.weight << ") ";
     }
     std::cout << std::endl;
   }
@@ -17,14 +17,14 @@ void Graph::print_graph() {
 
 bool Graph::dfs_are_ciclu(int node, std::vector<int> &colors) {
   colors[node] = 2;
-  std::vector<std::pair<int, int>> &neighbours = this->vecini(node);
-  for (auto &neighbour : neighbours) {
-    if (colors[neighbour.first] == 2)
+  auto &edges = this->edges(node);
+  for (auto &edge : edges) {
+    if (colors[edge.dest] == 2)
       return true;
-    if (dfs_are_ciclu(neighbour.first, colors)) {
+    if (dfs_are_ciclu(edge.dest, colors)) {
       return true;
     }
-    colors[neighbour.first] = 1;
+    colors[edge.dest] = 1;
   }
   return false;
 }
@@ -32,10 +32,10 @@ bool Graph::dfs_are_ciclu(int node, std::vector<int> &colors) {
 void Graph::dfs_comp_conexe(int node, std::vector<int> &visited,
                             std::vector<int> &order, bool do_order) {
   visited[node] = 1;
-  std::vector<std::pair<int, int>> &neighbours = this->vecini(node);
-  for (auto &neighbour : neighbours) {
-    if (!visited[neighbour.first]) {
-      this->dfs_comp_conexe(neighbour.first, visited, order, do_order);
+  auto &edges = this->edges(node);
+  for (auto &edge : edges) {
+    if (!visited[edge.dest]) {
+      this->dfs_comp_conexe(edge.dest, visited, order, do_order);
     }
   }
   if (do_order)
@@ -46,9 +46,10 @@ int Graph::comp_conexe() {
   GraphContainer gt_container;
   gt_container.resize(this->container.size());
   for (size_t node1 = 0; node1 < this->container.size(); node1++) {
-    for (auto &neighbour : this->container[node1]) {
-      int node2 = neighbour.first;
-      gt_container[node2].push_back({node1, neighbour.second});
+    for (auto &edge : this->container[node1]) {
+      int node2 = edge.dest;
+      gt_container[node2].push_back(
+          {(int)node1, edge.weight, edge.flow, edge.cap});
     }
   }
   Graph gt(gt_container);
@@ -96,22 +97,22 @@ std::vector<int> Graph::sortare_topologica() {
       no_incoming.insert(node);
       incoming[node] = 0;
     }
-    for (auto &neighbour : this->container[node]) {
-      incoming[neighbour.first]++;
-      if (no_incoming.find(neighbour.first) != no_incoming.end()) {
-        no_incoming.erase(neighbour.first);
+    for (auto &edge : this->container[node]) {
+      incoming[edge.dest]++;
+      if (no_incoming.find(edge.dest) != no_incoming.end()) {
+        no_incoming.erase(edge.dest);
       }
     }
   }
   while (!no_incoming.empty()) {
-    auto first = no_incoming.begin();
-    int node = *first;
-    no_incoming.erase(first);
+    auto dest = no_incoming.begin();
+    int node = *dest;
+    no_incoming.erase(dest);
     sorted.push_back(node);
-    std::vector<std::pair<int, int>> &neighbours = this->vecini(node);
-    for (auto &neighbour : neighbours) {
-      if (--incoming[neighbour.first] == 0) {
-        no_incoming.insert(neighbour.first);
+    auto &edges = this->edges(node);
+    for (auto &edge : edges) {
+      if (--incoming[edge.dest] == 0) {
+        no_incoming.insert(edge.dest);
       }
     }
   }
@@ -119,13 +120,21 @@ std::vector<int> Graph::sortare_topologica() {
 }
 
 Graph Graph::neorientat() {
-  Graph neorientat = *this;
-  for (size_t node = 0; node < neorientat.container.size(); node++) {
-    for (auto neighbour : this->container[node]) {
-      neorientat.container[neighbour.first].push_back({node, neighbour.second});
+  GraphContainer c(this->container.size());
+  std::vector<std::unordered_set<int>> g(this->container.size());
+  for (int node = 0; (size_t)node < this->container.size(); node++) {
+    for (auto &edge : this->container[node]) {
+      if (g[edge.dest].find(node) == g[edge.dest].end()) {
+        g[edge.dest].insert(node);
+        c[edge.dest].push_back({node, edge.weight, edge.flow, edge.cap});
+      }
+      if (g[node].find(edge.dest) == g[node].end()) {
+        g[node].insert(edge.dest);
+        c[node].push_back(edge);
+      }
     }
   }
-  return neorientat;
+  return Graph(c);
 }
 
 bool Graph::este_bipartit() {
@@ -140,14 +149,13 @@ bool Graph::este_bipartit() {
         int current_node = q.front();
         q.pop();
         int color = colors[current_node];
-        std::vector<std::pair<int, int>> &neighbours =
-            neorientat.vecini(current_node);
-        for (auto &neighbour : neighbours) {
-          if (colors[neighbour.first] == color) {
+        auto &edges = neorientat.edges(current_node);
+        for (auto &edge : edges) {
+          if (colors[edge.dest] == color) {
             return false;
-          } else if (colors[neighbour.first] == 0) {
-            q.push(neighbour.first);
-            colors[neighbour.first] = color == 1 ? 2 : 1;
+          } else if (colors[edge.dest] == 0) {
+            q.push(edge.dest);
+            colors[edge.dest] = color == 1 ? 2 : 1;
           }
         }
       }
@@ -188,8 +196,8 @@ void DSU::unite(int x, int y) {
 
 void Graph::get_edgelist() {
   for (size_t node = 0; node < this->container.size(); node++) {
-    for (auto &neighbour : this->container[node]) {
-      this->edge_list.push_back({neighbour.second, node, neighbour.first});
+    for (auto &edge : this->container[node]) {
+      this->edge_list.push_back({edge.weight, node, edge.dest});
     }
   }
 }
@@ -233,8 +241,8 @@ void Graph::dfs_puncte_critice(int node, int parent, std::vector<bool> &visited,
   disc[node] = low[node] = ++time;
 
   int children = 0;
-  for (std::pair<int, int> &neighbour : this->container[node]) {
-    int n_node = neighbour.first;
+  for (auto &edge : this->container[node]) {
+    int n_node = edge.dest;
     if (!visited[n_node]) {
       children++;
       dfs_puncte_critice(n_node, node, visited, disc, low, time, critical);
@@ -286,9 +294,9 @@ std::vector<int> Graph::dijkstra(int src_node) {
     int node = heap.begin()->second;
     heap.erase(heap.begin());
 
-    for (std::pair<int, int> &neighbour : this->container[node]) {
-      int n_node = neighbour.first;
-      int cost = neighbour.second;
+    for (auto &edge : this->container[node]) {
+      int n_node = edge.dest;
+      int cost = edge.weight;
       if (dist[node] + cost < dist[n_node] && dist[node] != INT_MAX) {
         dist[n_node] = dist[node] + cost;
         heap.insert({dist[n_node], n_node});
@@ -296,4 +304,97 @@ std::vector<int> Graph::dijkstra(int src_node) {
     }
   }
   return dist;
+}
+
+void Graph::add_edge(int node1, int node2, int weight = 0, int flow = 0,
+                     int cap = 0) {
+  this->container[node1].push_back({node2, weight, flow, cap});
+}
+
+void Graph::remove_edge(int node1, int node2) {
+  auto edges = this->edges(node1);
+  auto it = std::find(edges.begin(), edges.end(), node2);
+  if (it != this->container[node1].end()) {
+    this->container[node1].erase(it);
+  }
+}
+
+bool operator==(Edge &e1, const int node) { return e1.dest == node; }
+
+int Graph::edmonds_karp(int s, int t) {
+  int max_flow = 0;
+  GraphContainer rg(this->container.size());
+  for (int node = 0; (size_t)node < this->container.size(); node++) {
+    for (auto &edge : this->container[node]) {
+      rg[node].push_back({edge.dest, edge.weight, 0, edge.cap});
+      rg[edge.dest].push_back({node, edge.weight, edge.cap, edge.cap});
+    }
+  }
+
+  bool path = true;
+  std::vector<int> parent(this->container.size());
+  while (path) {
+    path = false;
+    std::queue<int> q;
+    std::vector<bool> visited(this->container.size());
+
+    // BFS
+
+    q.push(s);
+    visited[s] = true;
+    while (!q.empty()) {
+      int node = q.front();
+      q.pop();
+
+      for (auto &edge : rg[node]) {
+        int rez_flow = edge.cap - edge.flow;
+        if (!visited[edge.dest] && rez_flow > 0) {
+          visited[edge.dest] = true;
+          parent[edge.dest] = node;
+          q.push(edge.dest);
+          if (edge.dest == t) {
+            path = true;
+            break;
+          }
+        }
+      }
+    }
+    if (!path)
+      break;
+
+    int current = t;
+    int bottleneck = INT_MAX;
+    while (current != s) {
+      int prev = parent[current];
+      for (auto &edge : rg[prev]) {
+        if (edge.dest == current) {
+          bottleneck = std::min(bottleneck, edge.cap - edge.flow);
+          break;
+        }
+      }
+      current = prev;
+    };
+
+    current = t;
+    while (current != s) {
+      int prev = parent[current];
+      for (auto &edge : rg[prev]) {
+        if (edge.dest == current && edge.flow + bottleneck <= edge.cap) {
+          edge.flow += bottleneck;
+          break;
+        }
+      }
+      for (auto &edge : rg[current]) {
+        if (edge.dest == prev && edge.flow - bottleneck >= 0) {
+          edge.flow -= bottleneck;
+          break;
+        }
+      }
+      current = prev;
+    }
+
+    max_flow += bottleneck;
+  }
+
+  return max_flow;
 }

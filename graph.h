@@ -5,7 +5,14 @@
 #include <unordered_set>
 #include <vector>
 
-typedef std::vector<std::vector<std::pair<int, int>>> GraphContainer;
+struct Edge {
+  int dest;
+  int weight = 0;
+  int flow = 0;
+  int cap = 0;
+};
+
+typedef std::vector<std::vector<Edge>> GraphContainer;
 
 class DSU {
 private:
@@ -31,6 +38,9 @@ public:
     this->get_edgelist();
   }
 
+  void add_edge(int node1, int node2, int weight, int flow, int cap);
+  void remove_edge(int node1, int node2);
+
   void print_graph();
   int greutate();
   Graph neorientat();
@@ -43,6 +53,7 @@ public:
   Graph kruskal();
   std::vector<int> puncte_critice();
   std::vector<int> dijkstra(int src_node);
+  int edmonds_karp(int s, int t);
   const std::vector<std::tuple<int, int, int>> &lista_muchii() const {
     return this->edge_list;
   }
@@ -54,7 +65,7 @@ protected:
 
 private:
   void get_edgelist();
-  std::vector<std::pair<int, int>> &vecini(int node) { return container[node]; }
+  std::vector<Edge> &edges(int node) { return container[node]; }
   bool dfs_are_ciclu(int node, std::vector<int> &colors);
   void dfs_comp_conexe(int node, std::vector<int> &visited,
                        std::vector<int> &order, bool do_order = true);

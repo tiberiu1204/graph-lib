@@ -101,4 +101,34 @@ int main() {
                     ? "Passesd"
                     : "Failed")
             << std::endl;
+
+  Graph test10_1(
+      GraphContainer({{{Edge{1, 0, 0, 10}, Edge{2, 0, 0, 10}}},
+                      {{Edge{3, 0, 0, 4}, Edge{2, 0, 0, 2}, Edge{4, 0, 0, 8}}},
+                      {{Edge{4, 0, 0, 9}}},
+                      {{Edge{5, 0, 0, 10}}},
+                      {{Edge{5, 0, 0, 10}}},
+                      {}}));
+
+  Graph test10_2(GraphContainer({{{Edge{1, 0, 0, 20}, Edge{2, 0, 0, 20}}},
+                                 {{Edge{3, 0, 0, 5}}},
+                                 {{Edge{3, 0, 0, 15}}},
+                                 {{Edge{4, 0, 0, 10}}},
+                                 {{Edge{5, 0, 0, 20}}},
+                                 {}}));
+
+  Graph test10_3(GraphContainer({{{Edge{1, 0, 0, 16}, Edge{2, 0, 0, 13}}},
+                                 {{Edge{2, 0, 0, 10}, Edge{3, 0, 0, 12}}},
+                                 {{Edge{4, 0, 0, 14}}},
+                                 {{Edge{2, 0, 0, 9}, Edge{5, 0, 0, 20}}},
+                                 {{Edge{3, 0, 0, 7}, Edge{5, 0, 0, 4}}},
+                                 {}}));
+
+  std::cout << "Test 10: Edmonds-Karp - "
+            << (test10_1.edmonds_karp(0, 5) == 14 &&
+                        test10_2.edmonds_karp(0, 5) == 10 &&
+                        test10_3.edmonds_karp(0, 5) == 23
+                    ? "Passed"
+                    : "Failed")
+            << std::endl;
 }
