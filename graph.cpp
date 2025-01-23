@@ -9,7 +9,8 @@ void Graph::print_graph() {
   for (size_t node = 0; node < this->container.size(); node++) {
     std::cout << "Node " << node << ": ";
     for (auto &neighbor : this->container[node]) {
-      std::cout << "(" << neighbor.dest << ", " << neighbor.weight << ") ";
+      std::cout << "(" << neighbor.dest << ", " << neighbor.weight << ", "
+                << neighbor.flow << ", " << neighbor.cap << ") ";
     }
     std::cout << std::endl;
   }
@@ -137,7 +138,7 @@ Graph Graph::neorientat() {
   return Graph(c);
 }
 
-bool Graph::este_bipartit() {
+std::unordered_map<int, int> Graph::este_bipartit() {
   std::unordered_map<int, int> colors;
   std::queue<int> q;
   Graph neorientat = this->neorientat();
@@ -152,7 +153,7 @@ bool Graph::este_bipartit() {
         auto &edges = neorientat.edges(current_node);
         for (auto &edge : edges) {
           if (colors[edge.dest] == color) {
-            return false;
+            return {{-1, -1}};
           } else if (colors[edge.dest] == 0) {
             q.push(edge.dest);
             colors[edge.dest] = color == 1 ? 2 : 1;
@@ -161,7 +162,7 @@ bool Graph::este_bipartit() {
       }
     }
   }
-  return true;
+  return colors;
 }
 
 DSU::DSU(int n) {
@@ -378,7 +379,7 @@ int Graph::edmonds_karp(int s, int t) {
     while (current != s) {
       int prev = parent[current];
       for (auto &edge : rg[prev]) {
-        if (edge.dest == current) {
+        if (edge.dest == current && edge.cap - edge.flow > 0) {
           bottleneck = std::min(bottleneck, edge.cap - edge.flow);
           break;
         }
@@ -409,3 +410,37 @@ int Graph::edmonds_karp(int s, int t) {
 
   return max_flow;
 }
+
+int Graph::cuplu_max() {
+  auto colors = this->este_bipartit();
+  if (colors.find(-1) != colors.end()) {
+    return 0;
+  }
+
+  Graph flux = *this;
+  flux.add_node();
+  int s = flux.size() - 1;
+  flux.add_node();
+  int t = s + 1;
+
+  for (auto node_color : colors) {
+    int node = node_color.first;
+    int color = node_color.second;
+    if (color == 1) {
+      flux.add_edge(s, node, 0, 0, 1);
+    } else {
+      flux.add_edge(node, t, 0, 0, 1);
+    }
+  }
+  for (auto &edges : flux.container) {
+    for (auto &edge : edges) {
+      edge.cap = 1;
+      edge.flow = 0;
+    }
+  }
+  return flux.edmonds_karp(s, t);
+}
+
+void Graph::add_node() { this->container.push_back({}); }
+
+size_t Graph::size() const { return this->container.size(); }

@@ -39,15 +39,16 @@ int main() {
   Graph graphWithBipartiteCheck(bipartiteGraph);
 
   std::cout << "Test 5: Bipartite Graph Check - "
-            << (graphWithBipartiteCheck.este_bipartit() ? "Passed" : "Failed")
+            << (graphWithBipartiteCheck.este_bipartit()[-1] == 0 ? "Passed"
+                                                                 : "Failed")
             << std::endl;
 
   GraphContainer nonBipartiteGraph = {{{1, 1}, {2, 1}}, {{2, 1}}, {{0, 1}}};
   Graph graphWithNonBipartiteCheck(nonBipartiteGraph);
 
   std::cout << "Test 6: Non-Bipartite Graph Check - "
-            << (graphWithNonBipartiteCheck.este_bipartit() ? "Failed"
-                                                           : "Passed")
+            << (graphWithNonBipartiteCheck.este_bipartit()[-1] == 0 ? "Failed"
+                                                                    : "Passed")
             << std::endl;
 
   GraphContainer weightedGraph = {
@@ -128,6 +129,41 @@ int main() {
             << (test10_1.edmonds_karp(0, 5) == 14 &&
                         test10_2.edmonds_karp(0, 5) == 10 &&
                         test10_3.edmonds_karp(0, 5) == 23
+                    ? "Passed"
+                    : "Failed")
+            << std::endl;
+
+  Graph test11_1(
+      GraphContainer({{{Edge{1, 0, 0, 1}, Edge{2, 0, 0, 1}}},
+                      {{Edge{0, 0, 0, 1}, Edge{3, 0, 0, 1}}},
+                      {{Edge{0, 0, 0, 1}, Edge{3, 0, 0, 1}, Edge{4, 0, 0, 1}}},
+                      {{Edge{1, 0, 0, 1}, Edge{2, 0, 0, 1}, Edge{5, 0, 0, 1}}},
+                      {{Edge{2, 0, 0, 1}, Edge{5, 0, 0, 1}}},
+                      {{Edge{3, 0, 0, 1}, Edge{4, 0, 0, 1}}}}));
+
+  Graph test11_2(
+      GraphContainer({{{Edge{1, 0, 0, 1}, Edge{2, 0, 0, 1}, Edge{3, 0, 0, 1}}},
+                      {{Edge{0, 0, 0, 1}, Edge{4, 0, 0, 1}}},
+                      {{Edge{0, 0, 0, 1}, Edge{4, 0, 0, 1}, Edge{5, 0, 0, 1}}},
+                      {{Edge{0, 0, 0, 1}, Edge{5, 0, 0, 1}}},
+                      {{Edge{1, 0, 0, 1}, Edge{2, 0, 0, 1}, Edge{6, 0, 0, 1}}},
+                      {{Edge{2, 0, 0, 1}, Edge{3, 0, 0, 1}, Edge{6, 0, 0, 1}}},
+                      {{Edge{4, 0, 0, 1}, Edge{5, 0, 0, 1}}},
+                      {}}));
+
+  Graph test11_3(GraphContainer({{{Edge{2, 0, 0, 1}}},
+                                 {{Edge{3, 0, 0, 1}}},
+                                 {{Edge{0, 0, 0, 1}, Edge{4, 0, 0, 1}}},
+                                 {{Edge{1, 0, 0, 1}, Edge{6, 0, 0, 1}}},
+                                 {{Edge{2, 0, 0, 1}, Edge{7, 0, 0, 1}}},
+                                 {{Edge{7, 0, 0, 1}}},
+                                 {{Edge{3, 0, 0, 1}}},
+                                 {{Edge{4, 0, 0, 1}, Edge{5, 0, 0, 1}}},
+                                 {}}));
+
+  std::cout << "Test 11: Cuplaj Maxim - "
+            << (test11_1.cuplu_max() == 3 && test11_2.cuplu_max() == 3 &&
+                        test11_3.cuplu_max() == 3
                     ? "Passed"
                     : "Failed")
             << std::endl;

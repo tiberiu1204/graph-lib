@@ -40,6 +40,8 @@ public:
 
   void add_edge(int node1, int node2, int weight, int flow, int cap);
   void remove_edge(int node1, int node2);
+  void add_node();
+  size_t size() const;
 
   void print_graph();
   int greutate();
@@ -48,12 +50,13 @@ public:
   bool are_ciclu();
   int comp_conexe();
   bool este_conex();
-  bool este_bipartit();
+  std::unordered_map<int, int> este_bipartit();
   std::vector<int> sortare_topologica();
   Graph kruskal(std::pair<int, int> force_take = {-1, -1});
   std::vector<int> puncte_critice();
   std::vector<int> dijkstra(int src_node);
   int edmonds_karp(int s, int t);
+  int cuplu_max();
   const std::vector<std::tuple<int, int, int>> &lista_muchii() const {
     return this->edge_list;
   }
