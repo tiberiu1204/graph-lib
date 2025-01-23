@@ -50,7 +50,7 @@ public:
   bool este_conex();
   bool este_bipartit();
   std::vector<int> sortare_topologica();
-  Graph kruskal();
+  Graph kruskal(std::pair<int, int> force_take = {-1, -1});
   std::vector<int> puncte_critice();
   std::vector<int> dijkstra(int src_node);
   int edmonds_karp(int s, int t);

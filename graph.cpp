@@ -202,13 +202,23 @@ void Graph::get_edgelist() {
   }
 }
 
-Graph Graph::kruskal() {
+Graph Graph::kruskal(std::pair<int, int> force_take) {
   std::sort(this->edge_list.begin(), this->edge_list.end());
 
   GraphContainer container;
   container.resize(this->container.size());
   DSU s(this->container.size());
   size_t count = 0;
+  if (force_take.first != -1) {
+    int x = force_take.first;
+    int y = this->container[x][force_take.second].dest;
+    int w = this->container[x][force_take.second].weight;
+    s.unite(x, y);
+    container[x].push_back({y, w});
+    count++;
+  }
+  if (count == this->container.size() - 1)
+    return Graph(container);
   for (auto &edge : this->edge_list) {
     int w = std::get<0>(edge);
     int x = std::get<1>(edge);
@@ -326,8 +336,9 @@ int Graph::edmonds_karp(int s, int t) {
   GraphContainer rg(this->container.size());
   for (int node = 0; (size_t)node < this->container.size(); node++) {
     for (auto &edge : this->container[node]) {
-      rg[node].push_back({edge.dest, edge.weight, 0, edge.cap});
-      rg[edge.dest].push_back({node, edge.weight, edge.cap, edge.cap});
+      rg[node].push_back({edge.dest, edge.weight, edge.flow, edge.cap});
+      rg[edge.dest].push_back(
+          {node, edge.weight, edge.cap - edge.flow, edge.cap});
     }
   }
 
