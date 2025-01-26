@@ -345,74 +345,71 @@ bool operator==(Edge &e1, const int node) { return e1.dest == node; }
 int Graph::edmonds_karp(int s, int t) {
   int max_flow = 0;
   GraphContainer rg(this->container.size());
-  for (int node = 0; (size_t)node < this->container.size(); node++) {
-    for (auto &edge : this->container[node]) {
-      rg[node].push_back({edge.dest, edge.weight, edge.flow, edge.cap});
-      rg[edge.dest].push_back(
-          {node, edge.weight, edge.cap - edge.flow, edge.cap});
+  std::vector<std::vector<int>> reverse_edge_indices(rg.size());
+
+  for (int u = 0; (size_t)u < this->container.size(); ++u) {
+    for (const auto &edge : this->container[u]) {
+      int v = edge.dest;
+      int cap = edge.cap;
+      int flow = edge.flow;
+
+      rg[u].push_back({v, edge.weight, flow, cap});
+
+      rg[v].push_back({u, edge.weight, cap - flow, cap});
+
+      reverse_edge_indices[u].push_back(rg[v].size() - 1);
+      reverse_edge_indices[v].push_back(rg[u].size() - 1);
     }
   }
 
-  bool path = true;
-  std::vector<int> parent(this->container.size());
-  while (path) {
-    path = false;
+  std::vector<std::pair<int, int>> parent(container.size());
+
+  while (true) {
     std::queue<int> q;
-    std::vector<bool> visited(this->container.size());
-
-    // BFS
-
     q.push(s);
-    visited[s] = true;
-    while (!q.empty()) {
-      int node = q.front();
+    std::fill(parent.begin(), parent.end(), std::make_pair(-1, -1));
+    parent[s] = {-2, -2};
+
+    bool found_path = false;
+    while (!q.empty() && !found_path) {
+      int u = q.front();
       q.pop();
 
-      for (auto &edge : rg[node]) {
+      for (int i = 0; (size_t)i < rg[u].size(); ++i) {
+        const auto &edge = rg[u][i];
+        int v = edge.dest;
         int rez_flow = edge.cap - edge.flow;
-        if (!visited[edge.dest] && rez_flow > 0) {
-          visited[edge.dest] = true;
-          parent[edge.dest] = node;
-          q.push(edge.dest);
-          if (edge.dest == t) {
-            path = true;
+
+        if (parent[v].first == -1 && rez_flow > 0) {
+          parent[v] = {u, i};
+          q.push(v);
+          if (v == t) {
+            found_path = true;
             break;
           }
         }
       }
     }
-    if (!path)
+
+    if (!found_path)
       break;
 
-    int current = t;
     int bottleneck = INT_MAX;
-    while (current != s) {
-      int prev = parent[current];
-      for (auto &edge : rg[prev]) {
-        if (edge.dest == current && edge.cap - edge.flow > 0) {
-          bottleneck = std::min(bottleneck, edge.cap - edge.flow);
-          break;
-        }
-      }
-      current = prev;
-    };
+    for (int v = t; v != s; v = parent[v].first) {
+      int u = parent[v].first;
+      int edge_idx = parent[v].second;
+      bottleneck =
+          std::min(bottleneck, rg[u][edge_idx].cap - rg[u][edge_idx].flow);
+    }
 
-    current = t;
-    while (current != s) {
-      int prev = parent[current];
-      for (auto &edge : rg[prev]) {
-        if (edge.dest == current && edge.flow + bottleneck <= edge.cap) {
-          edge.flow += bottleneck;
-          break;
-        }
-      }
-      for (auto &edge : rg[current]) {
-        if (edge.dest == prev && edge.flow - bottleneck >= 0) {
-          edge.flow -= bottleneck;
-          break;
-        }
-      }
-      current = prev;
+    for (int v = t; v != s; v = parent[v].first) {
+      int u = parent[v].first;
+      int edge_idx = parent[v].second;
+
+      rg[u][edge_idx].flow += bottleneck;
+
+      int rev_idx = reverse_edge_indices[u][edge_idx];
+      rg[v][rev_idx].flow -= bottleneck;
     }
 
     max_flow += bottleneck;
