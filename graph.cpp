@@ -224,6 +224,8 @@ Graph Graph::kruskal(std::pair<int, int> force_take) {
     int w = std::get<0>(edge);
     int x = std::get<1>(edge);
     int y = std::get<2>(edge);
+    if (x == force_take.first && y == force_take.second)
+      continue;
 
     if (s.find(x) != s.find(y)) {
       s.unite(x, y);
