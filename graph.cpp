@@ -204,6 +204,7 @@ void Graph::get_edgelist() {
 }
 
 Graph Graph::kruskal(std::pair<int, int> force_take) {
+  this->get_edgelist();
   std::sort(this->edge_list.begin(), this->edge_list.end());
 
   GraphContainer container;
@@ -299,20 +300,27 @@ std::vector<int> Graph::puncte_critice() {
 std::vector<int> Graph::dijkstra(int src_node) {
   size_t n = this->container.size();
   std::vector<int> dist(n, INT_MAX);
-  std::set<std::pair<int, int>> heap;
+  std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>,
+                      std::greater<std::pair<int, int>>>
+      heap;
   dist[src_node] = 0;
-  heap.insert({0, src_node});
+  heap.push({0, src_node});
 
   while (!heap.empty()) {
-    int node = heap.begin()->second;
-    heap.erase(heap.begin());
+    int node = heap.top().second;
+    int current_dist = heap.top().first;
+    heap.pop();
+
+    if (current_dist > dist[node]) {
+      continue;
+    }
 
     for (auto &edge : this->container[node]) {
       int n_node = edge.dest;
       int cost = edge.weight;
-      if (dist[node] + cost < dist[n_node] && dist[node] != INT_MAX) {
+      if (dist[node] != INT_MAX && dist[node] + cost < dist[n_node]) {
         dist[n_node] = dist[node] + cost;
-        heap.insert({dist[n_node], n_node});
+        heap.push({dist[n_node], n_node});
       }
     }
   }

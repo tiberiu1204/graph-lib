@@ -42,6 +42,7 @@ public:
   void remove_edge(int node1, int node2);
   void add_node();
   size_t size() const;
+  std::vector<Edge> &edges(int node) { return container[node]; }
 
   void print_graph();
   int greutate();
@@ -68,7 +69,6 @@ protected:
 
 private:
   void get_edgelist();
-  std::vector<Edge> &edges(int node) { return container[node]; }
   bool dfs_are_ciclu(int node, std::vector<int> &colors);
   void dfs_comp_conexe(int node, std::vector<int> &visited,
                        std::vector<int> &order, bool do_order = true);
