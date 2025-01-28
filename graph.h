@@ -26,6 +26,8 @@ public:
   void unite(int x, int y);
 };
 
+typedef std::vector<std::vector<int>> IntMatrix;
+
 class Graph {
 public:
   Graph() = default;
@@ -59,6 +61,7 @@ public:
   int edmonds_karp(int s, int t);
   int cuplu_max();
   std::pair<std::vector<int>, std::vector<int>> bellman_ford(int src);
+	void floyd_warshall(IntMatrix &d, IntMatrix &p);
   const std::vector<std::tuple<int, int, int>> &lista_muchii() const {
     return this->edge_list;
   }

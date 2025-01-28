@@ -483,3 +483,31 @@ std::pair<std::vector<int>, std::vector<int>> Graph::bellman_ford(int src) {
   }
   return {tata, d};
 }
+
+void Graph::floyd_warshall(IntMatrix &d, IntMatrix &p) {
+  d.resize(this->size(), std::vector<int>(this->size(), INT_MAX));
+  p.resize(this->size(), std::vector<int>(this->size()));
+  for (size_t u = 0; u < this->size(); u++) {
+    for (auto &edge : this->container[u]) {
+      int v = edge.dest, w = edge.weight;
+      d[u][v] = w;
+      p[u][v] = u;
+    }
+  }
+  int n = this->size();
+  for (size_t k = 0; k < n; k++) {
+    for (size_t i = 0; i < n; i++) {
+      for (size_t j = 0; j < n; j++) {
+        if (i == j) {
+          d[i][j] = 0;
+        }
+        if (d[i][k] == INT_MAX || d[k][j] == INT_MAX)
+          continue;
+        if (d[i][j] > d[i][k] + d[k][j]) {
+          d[i][j] = d[i][k] + d[k][j];
+          p[i][j] = p[k][j];
+        }
+      }
+    }
+  }
+}
