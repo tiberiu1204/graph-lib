@@ -451,3 +451,35 @@ int Graph::cuplu_max() {
 void Graph::add_node() { this->container.push_back({}); }
 
 size_t Graph::size() const { return this->container.size(); }
+
+std::pair<std::vector<int>, std::vector<int>> Graph::bellman_ford(int src) {
+  std::vector<int> tata(this->container.size(), -1);
+  std::vector<int> d(this->container.size(), INT_MAX);
+  std::queue<int> q;
+  std::vector<bool> in_queue(this->container.size());
+  std::vector<int> ct_in_queue(this->container.size());
+  d[src] = 0;
+  in_queue[src] = true;
+  q.push(src);
+  while (!q.empty()) {
+    int u = q.front();
+    q.pop();
+    in_queue[u] = false;
+    for (auto &edge : this->container[u]) {
+      int v = edge.dest, w = edge.weight;
+      if (d[u] < INT_MAX && d[u] + w < d[v]) {
+        d[v] = d[u] + w;
+        tata[v] = u;
+        if (!in_queue[v]) {
+          q.push(v);
+          in_queue[v] = true;
+          ct_in_queue[v]++;
+          if (ct_in_queue[v] > this->container.size()) {
+            return {};
+          }
+        }
+      }
+    }
+  }
+  return {tata, d};
+}

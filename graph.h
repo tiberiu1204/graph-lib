@@ -58,6 +58,7 @@ public:
   std::vector<int> dijkstra(int src_node);
   int edmonds_karp(int s, int t);
   int cuplu_max();
+  std::pair<std::vector<int>, std::vector<int>> bellman_ford(int src);
   const std::vector<std::tuple<int, int, int>> &lista_muchii() const {
     return this->edge_list;
   }
